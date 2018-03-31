@@ -1,0 +1,17 @@
+<tr style="border-collapse:collapse;color:rgb(41,43,44);height:49px;text-decoration:none solid rgb(41,43,44);vertical-align:middle;width:714px;background:rgba(0,0,0,0.05) none repeat scroll 0% 0%/auto padding-box border-box;border:0px none rgb(128,128,128);border-spacing:2px 2px;font:normal normal normal normal 16px/24px -apple-system,system-ui,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,&quot;Helvetica Neue&quot;,Arial,sans-serif;outline:rgb(41,43,44) none 0px">
+   <th style="border-collapse:collapse;color:rgb(41,43,44);height:49px;text-align:left;text-decoration:none solid rgb(41,43,44);vertical-align:top;width:320px;border-top:1px solid rgb(236,238,239);border-right:0px none rgb(41,43,44);border-bottom:0px none rgb(41,43,44);border-left:0px none rgb(41,43,44);border-spacing:2px 2px;font:normal normal bold normal 16px/24px -apple-system,system-ui,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,&quot;Helvetica Neue&quot;,Arial,sans-serif;outline:rgb(41,43,44) none 0px;padding:12px">
+      CLASS_NAME
+   </th>
+   <td style="border-collapse:collapse;color:rgb(41,43,44);height:49px;text-decoration:none solid rgb(41,43,44);vertical-align:top;width:136px;border-top:1px solid rgb(236,238,239);border-right:0px none rgb(41,43,44);border-bottom:0px none rgb(41,43,44);border-left:0px none rgb(41,43,44);border-spacing:2px 2px;font:normal normal normal normal 16px/24px -apple-system,system-ui,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,&quot;Helvetica Neue&quot;,Arial,sans-serif;outline:rgb(41,43,44) none 0px;padding:12px;padding-left:31px;">
+      TOTAL_CLASS
+   </td>
+   <td style="border-collapse:collapse;color:rgb(41,43,44);height:49px;text-decoration:none solid rgb(41,43,44);vertical-align:top;width:123px;border-top:1px solid rgb(236,238,239);border-right:0px none rgb(41,43,44);border-bottom:0px none rgb(41,43,44);border-left:0px none rgb(41,43,44);border-spacing:2px 2px;font:normal normal normal normal 16px/24px -apple-system,system-ui,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,&quot;Helvetica Neue&quot;,Arial,sans-serif;outline:rgb(41,43,44) none 0px;padding:12px">
+      ROLE
+   </td>
+   <td style="border-collapse:collapse;color:rgb(41,43,44);height:49px;text-decoration:none solid rgb(41,43,44);vertical-align:top;width:178px;border-top:1px solid rgb(236,238,239);border-right:0px none rgb(41,43,44);border-bottom:0px none rgb(41,43,44);border-left:0px none rgb(41,43,44);border-spacing:2px 2px;font:normal normal normal normal 16px/24px -apple-system,system-ui,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,&quot;Helvetica Neue&quot;,Arial,sans-serif;outline:rgb(41,43,44) none 0px;padding:12px">
+      SALARY_UNIT
+   </td>
+   <td style="border-collapse:collapse;color:rgb(41,43,44);height:49px;text-decoration:none solid rgb(41,43,44);vertical-align:top;width:189px;border-top:1px solid rgb(236,238,239);border-right:0px none rgb(41,43,44);border-bottom:0px none rgb(41,43,44);border-left:0px none rgb(41,43,44);border-spacing:2px 2px;font:normal normal normal normal 16px/24px -apple-system,system-ui,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,&quot;Helvetica Neue&quot;,Arial,sans-serif;outline:rgb(41,43,44) none 0px;padding:12px">
+      TOTAL_SALARY
+   </td>
+</tr>
