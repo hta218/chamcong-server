@@ -7,6 +7,7 @@ var salarySchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'course'
   },
+  classNo: Number,
   role: String,
   salary: Number
 });

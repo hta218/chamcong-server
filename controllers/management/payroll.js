@@ -23,11 +23,13 @@ router.get('/', (req, res) => {
   endDate = moment(endDate).toDate();
 
   Instructor.aggregate([
+    // Find the needed instructor
     {
       '$match' : {
         'code' : instructorCode
       }
     },
+    // Find the records associate with the given instructor
     {
       '$lookup' : {
         'from' : 'instructorrecords',
@@ -36,15 +38,17 @@ router.get('/', (req, res) => {
         'as' : 'records'
       }
     },
+    // Filter only the record with the given date range
     {
       '$project' : {
-        '_id' : 1,
-        'name' : 1,
-        'code' : 1,
-        'email' : 1,
-        'courses' : 1,
-        'image' : 1,
-        'paidTime' : 1,
+        "instructor" : {
+          '_id' : "$_id",
+          'name' : "$name",
+          'code' : "$code",
+          'email' : "$email",
+          'courses' : "$course",
+          'paidTime' : "$paidTime"
+        },
         'records' : {
           '$filter' : {
             "input" : '$records',
@@ -60,189 +64,176 @@ router.get('/', (req, res) => {
         }
       }
     },
+    // Unpack records for populating
     {
-      '$addFields' : {
-        'details' : '$records'
+      '$unwind': '$records'
+    },
+    // Find the course for each record
+    {
+      "$lookup": {
+        "from": "courses",
+        "localField": "records.course",
+        "foreignField": "_id",
+        "as": "records.courses"
       }
     },
-    {
-      '$unwind' : '$records'
-    },
+    // Flat out the found courses (only take the first item of array)
     {
       '$project' : {
-        '_id' : 1,
-        'code' : 1,
-        'name' : 1,
-        'email' : 1,
-        'courses' : 1,
-        'image' : 1,
-        'paidTime' : 1,
-        'details' : 1,
-        'course' : '$records.course',
-        'className' : '$records.className',
-        'role' : '$records.role'
+        "instructor": 1,
+        'records' : {
+          "_id": 1,
+          "classNo": 1,
+          "recordDate": 1,
+          "addedDate": 1,
+          "role": 1,
+          "course": { "$arrayElemAt": ["$records.courses", 0]}
+        }
       }
     },
+    // Combine course name and class no into className
+    {
+      '$project' : {
+        "instructor": 1,
+        'records' : {
+          "_id": 1,
+          "classNo": 1,
+          "recordDate": 1,
+          "addedDate": 1,
+          "role": 1,
+          // Use $substr to convert int to str: from 0 to -1 means from 0 to len-1
+          "className": {"$concat": [ "$records.course.name", " ", {"$substr" : ['$records.classNo', 0, -1]} ]} ,
+          "classNameAndRole": {"$concat": [ "$records.course.name", " ", {"$substr" : ['$records.classNo', 0, -1]}, " ", "$records.role" ]},
+          "course": 1
+        }
+      }
+    },
+    // Temporarily group all records and generate payrollDetails
+    {
+      '$group': {
+        '_id': "$instructor._id",
+        "instructor": {"$first": "$instructor"},
+        'records': { '$push': '$records' },
+        'payrollDetails': { '$push': '$records' }
+      }
+    },
+    {
+      '$unwind': '$records'
+    },
+    // Get instructor salaries
     {
       '$lookup' : {
         'from' : 'salary',
-        'localField' : 'code',
+        'localField' : 'instructor.code',
         'foreignField' : 'instructor',
         'as' : 'salaries'
       }
     },
+    // Filter out only the relevant
     {
       '$project' : {
-        '_id' : 1,
-        'code' : 1,
-        'name' : 1,
-        'email' : 1,
-        'courses' : 1,
-        'image' : 1,
-        'paidTime' : 1,
-        'details' : 1,
-        'course' : 1,
-        'className' : 1,
-        'role' : 1,
+        "instructor": 1,
+        'records' : 1,
+        "payrollDetails": 1,
         'salaries' : {
           '$filter' : {
             'input' : '$salaries',
             'as' : 'salary',
             'cond' : {
               '$and' : [
-                {'$eq' : ['$$salary.course', '$course']},
-                {'$eq' : ['$$salary.role', '$role']}
+                {'$eq' : ['$$salary.course', '$records.course._id']},
+                {'$eq' : ['$$salary.role', '$records.role']}
               ]
             }
           }
         }
       }
     },
+    // Flat out salary
     {
       '$project' : {
-        '_id' : 1,
-        'code' : 1,
-        'name' : 1,
-        'email' : 1,
-        'courses' : 1,
-        'image' : 1,
-        'paidTime' : 1,
-        'details' : 1,
-        'course' : 1,
-        'className' : 1,
-        'role' : 1,
-        'salary' : {'$arrayElemAt' : ['$salaries.salary', 0]}
+        "instructor": 1,
+        "payrollDetails": 1,
+        'records' : 1,
+        'salary' : {'$arrayElemAt' : ['$salaries.salary', 0]} // select only [0] element
+      }
+    },
+    {
+      '$project' : {
+        "instructor": 1,
+        "payrollDetails": 1,
+        'records' : 1,
+        'salary' : {'$ifNull' : ['$salary', 0]}
       }
     },
     {
       '$group' : {
-        '_id' : {
-          '_id' : '$_id',
-          'name' : '$name',
-          'code' : '$code',
-          'email' : '$email',
-          'courses' : '$courses',
-          'image' : '$image',
-          'paidTime' : '$paidTime',
-          'details' : '$details',
-          'course' : '$course',
-          'className' : '$className',
-          'role' : '$role',
-          'salary' : '$salary'
-        },
-        'totalClass' : {'$sum' : 1},
-        'totalSalary' : {'$sum' : '$salary'}
+        '_id': '$records.classNameAndRole',
+        "instructor": {"$first": "$instructor"},
+        'payrollDetails': { '$first' : '$payrollDetails' },
+        'totalClass' : { '$sum' : 1 },
+        'totalSalary' : { '$sum' : '$salary' },
+        'salary': {'$first': '$salary'},
+        'className': {'$first': "$records.className"},
+        "course": { "$first": "$records.course._id" },
+        "role": { "$first": "$records.role" },
       }
     },
     {
-      '$addFields' : {
-        'instructor' : {
-          '_id' : '$_id._id',
-          'name' : '$_id.name',
-          'code' : '$_id.code',
-          'email' : '$_id.email',
-          'courses' : '$_id.courses',
-          'image' : '$_id.image',
-          'paidTime' : '$_id.paidTime',
-          'payrollDetails' : '$_id.details'
+      '$project': {
+        "_id": 1,
+        "instructor": 1,
+        "payrollDetails": 1,
+        "payroll": {
+          'salary': '$salary',
+          "totalClass": "$totalClass",
+          "totalSalary": "$totalSalary",
+          "course": "$course",
+          "className": "$className",
+          "role": "$role"
         }
       }
     },
+    // Sum ALL up
     {
-      '$project' : {
-        '_id' : 0,
-        'instructor' : 1,
-        'course' : '$_id.course',
-        'className' : '$_id.className',
-        'role' : '$_id.role',
-        'salary' : '$_id.salary',
-        'totalClass' : 1,
-        'totalSalary' : 1
-      }
-    },
-    {
-      '$group' : {
-        '_id' : '$instructor',
-        'payroll' : {
-          '$push' : {
-            'course' : '$course',
-            'className' : '$className',
-            'role' : '$role',
-            'salary' : '$salary',
-            'totalClass' : '$totalClass',
-            'totalSalary' : '$totalSalary'
-          }
-        },
-        'totalMonthSalary' : {'$sum' : '$totalSalary'}
+      '$group': {
+        "_id": "$instructor._id",
+        'payrollDetails': { '$first' : '$payrollDetails' },
+        "instructor": {"$first": "$instructor"},
+        "payroll": {"$push": "$payroll"},
+        "totalMonthSalary": {"$sum": "$payroll.totalSalary"}
       }
     }
   ])
   .exec((err, results) => {
     if (err) {
-      res.json({success: 0, message: 'Unable to fetch instructor payroll'})
-    } else {
+      res.status(500).json({
+        'success': 0,
+        'message': 'Error while quering data',
+        'error': err
+      });
+    }
+    else if (results) {
 
-      var summaryTime = {
-        'startDate' : startDate,
-        'endDate' : endDate
+      var data = {
+        instructor: null,
+        payroll: null,
+        payrollDetails: null,
+      };
+
+      if (results.length != 0) {
+        data = results[0];
       }
 
-      if (!results.length) {
-        Instructor.findOne({code: instructorCode}, (err, instructor) => {
-          if (err) {
-            res.json({success: 0, message: 'Unable to fetch instructor payroll'})
-          } else {
-            res.json({
-              success: 1,
-              message: 'Fetch instructor payroll successfully',
-              summaryTime : summaryTime,
-              instructor: instructor,
-              payroll: []
-            })
-          }
-        });
-      } else {
-        var instructorInfos = results[0];
-        var instructor = {
-          _id: instructorInfos._id._id,
-          name: instructorInfos._id.name,
-          code: instructorInfos._id.code,
-          email: instructorInfos._id.email,
-          courses: instructorInfos._id.courses,
-          image: instructorInfos._id.image,
-          paidTime: instructorInfos._id.paidTime,
-          payrollDetails: instructorInfos._id.payrollDetails,
-          totalMonthSalary: instructorInfos.totalMonthSalary
-        }
-
-        res.json({
-          success: 1,
-          message: 'Fetch instructor payroll successfully',
-          summaryTime : summaryTime,
-          instructor: instructor,
-          payroll: instructorInfos.payroll
-        });
-      }
+      res.json({
+        'success': 1,
+        'message': 'Fetched payroll successfully',
+        instructor: data.instructor,
+        payroll: data.payroll,
+        payrollDetails: data.payrollDetails,
+        summaryTime: { startDate, endDate },
+        totalMonthSalary: data.totalMonthSalary
+      });
     }
   });
 });

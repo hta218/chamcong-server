@@ -11,6 +11,7 @@ var instructorRecordSchema = new Schema({
     ref: 'course'
   },
   className: String,
+  classNo: Number,
   role: String,
   recordDate: Date,
   addedDate: Date,

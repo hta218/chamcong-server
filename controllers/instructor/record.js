@@ -26,6 +26,7 @@ router.post('/', (req, res) => {
   var instructor = body.instructorId;
   var course = body.course;
   var className = body.className;
+  var classNo = body.classNo;
   var role = body.role;
   var recordDate = body.recordDate;
   var addedDate = moment();
@@ -35,6 +36,7 @@ router.post('/', (req, res) => {
     instructor,
     course,
     className,
+    classNo,
     role,
     recordDate,
     addedDate,
@@ -66,8 +68,33 @@ router.post('/', (req, res) => {
   });
 });
 
+router.patch('/:recordId', (req, res) => {
+  var recordId = req.params.recordId;
+  
+  var body = req.body;
+  var course = body.course;
+  var role = body.role;
+  var className = body.className;
+
+  InstructorRecord.findByIdAndUpdate(
+    recordId,
+  {
+    "course": course,
+    "role": role,
+    "className": className
+  }, {
+    "new": true
+  }, (err, updatedRecord) => {
+    if (err) {
+      res.json({success: 0, message: 'Unable to update record', err: err})
+    } else {
+      res.json({success: 1, message: "Updated successfully", updatedRecord});
+    }
+  });
+});
+
 router.delete('/:recordId', (req, res) => {
-  const recordId = req.params.recordId;
+  var recordId = req.params.recordId;
 
   InstructorRecord.findByIdAndUpdate(
     recordId,
