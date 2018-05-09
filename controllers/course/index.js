@@ -10,6 +10,11 @@ router.use(managerFilter);
 router.get('/', (req, res) => {
   Course.aggregate([
     {
+      '$match': {
+        'isActive': true
+      }
+    },
+    {
       '$lookup': {
         'from': 'classinfos',
         'localField': '_id',
