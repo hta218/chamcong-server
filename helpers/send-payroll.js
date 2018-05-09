@@ -141,7 +141,7 @@ exports.send = (adminInfos, payrollTime, instructor, payroll, callback) => {
       // set the HTML mail-body
       htmlContent = setTime(htmlContent, payrollTime);
 
-      var month = moment(payrollTime.startDate).get('month');
+      var month = moment(payrollTime.startDate).get('month') + 1;
       sendMail(adminInfos, instructor.email, `Iliat School - Bảng Lương Giảng Viên Tháng ${month}`, htmlContent, callback);
     }
   });
