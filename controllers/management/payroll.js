@@ -46,7 +46,7 @@ router.get('/', (req, res) => {
           'name' : "$name",
           'code' : "$code",
           'email' : "$email",
-          'courses' : "$course",
+          'courses' : "$courses",
           'paidTime' : "$paidTime"
         },
         'records' : {
@@ -238,6 +238,9 @@ router.get('/', (req, res) => {
   });
 });
 
+var { accountantFilter } = require('../auth-filter');
+router.use(accountantFilter);
+
 // send instructor payroll via Gmail router
 router.get('/send', (req, res) => {
 
@@ -428,6 +431,7 @@ router.get('/send', (req, res) => {
           console.log('Unable to fetch admin infos');
         } else {
           adminInfos = admin.infos;
+          res.json({success: 1, message: 'Mail sent successfully', instructor, payroll});
 
           // send instructor payroll via gmail
           sendPayroll.send(adminInfos, summaryTime, instructor, payroll, (err, info) => {
@@ -463,7 +467,7 @@ router.get('/send', (req, res) => {
               }
               /////////////////////////////////////////////////////////////
 
-              res.json({success: 1, message: 'Mail sent successfully'});
+              res.json({success: 1, message: 'Mail sent successfully', instructor, payroll});
             }
           });
         }

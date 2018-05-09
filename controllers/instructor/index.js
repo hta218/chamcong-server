@@ -2,10 +2,17 @@ var express = require('express');
 var router = express.Router();
 
 var moment = require('moment');
+var mongoose = require('mongoose');
 
+var { managerFilter } = require('../auth-filter');
 var { getUnicodeText } = require('../../helpers/get-unicode-text');
 
 var Instructor = require('../../models/instructor');
+var Team = require('../../models/team');
+
+router.use('/record', require('./record'));
+
+router.use(managerFilter);
 
 // search
 router.get('/', (req, res) => {
@@ -111,7 +118,16 @@ router.get('/', (req, res) => {
 });
 
 router.get('/all', (req, res) => {
+  var name = req.query.name;
+  var regexToSearchName = name ? name : "";
   Instructor.aggregate([
+    {
+      '$match' : {
+        'searchName' : {
+          '$regex' : regexToSearchName, "$options" : "i"
+        }
+      }
+    },
     {
       '$unwind': {
         'path' : '$courses',
@@ -131,7 +147,6 @@ router.get('/all', (req, res) => {
         '_id' : '$_id',
         "name": { '$first' : '$name' },
         "searchName": { '$first' : '$searchName' },
-        "image": { '$first' : '$image' },
         "code": { '$first' : '$code' },
         "email": { '$first' : '$email' },
         "paidTime": { '$first' : '$paidTime' },
@@ -139,6 +154,9 @@ router.get('/all', (req, res) => {
           '$push' : {'$arrayElemAt' : ['$course', 0]}
         }
       }
+    },
+    {
+      '$sort': {'name': 1}
     }
   ]).exec((err, instructors) => {
     if (err) {
@@ -153,7 +171,7 @@ router.post('/', (req, res) => {
   var body = req.body;
   var name = body.name;
   var image = body.image;
-  var code = body.code;
+  var teamId = body.teamId;
   var email = body.email;
   var courses = body.courses;
   var paidTime = {
@@ -167,18 +185,31 @@ router.post('/', (req, res) => {
     name: name,
     searchName: searchName,
     image: image,
-    code: code,
     email: email,
     courses: courses,
     paidTime
   });
+  
+  Team.findByIdAndUpdate({
+    "_id": mongoose.Types.ObjectId(teamId)
+  }, {
+    '$inc': {'maxNo':  1}
+  }, {new: true}, (err, updatedTeam) => {
+      // updatedTeam.n: number of document that match the query and had udpated
+      if (err) {
+        res.json({success: 0, message: "Unable to create instructor code", err});
+      } else {
+        
+        instructor.code = updatedTeam.code + updatedTeam.maxNo;
 
-  instructor.save((err, savedInstructor) => {
-    if (err) {
-      res.json({success: 0, message:" Unable to save data " + err});
-    } else {
-      res.json({success: 1, message:"Save ok", savedInstructor: savedInstructor});
-    }
+        instructor.save((err, savedInstructor) => {
+          if (err) {
+            res.json({success: 0, message:" Unable to save data " + err});
+          } else {
+            res.json({success: 1, message:"Save ok", savedInstructor});
+          }
+        });
+      }
   });
 });
 
@@ -212,15 +243,11 @@ router.delete('/:instructorId', (req, res) => {
 
   Instructor.findByIdAndRemove(instructorId, (err, instructorRemoved) => {
     if (err) {
-      res.json({success: 0, message: 'Unable to remove instructor', err})
+      res.json({success: 0, message: 'Unable to remove instructor', err});
     } else {
-      res.json({success: 1, message: 'Removed instructor', instructorRemoved: instructorRemoved})
+      res.json({success: 1, message: 'Removed instructor', instructorRemoved: instructorRemoved});
     }
   });
 });
-
-// TODO: write api /update-instructor-courses
-
-router.use('/record', require('./record'));
 
 module.exports = router;

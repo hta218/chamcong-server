@@ -131,6 +131,9 @@ router.get('/', (req, res) => {
         'totalClass' : 1,
         'totalSalary' : 1
       }
+    },
+    {
+      '$sort': {'name': 1}
     }
   ])
   .exec((err, payroll) => {

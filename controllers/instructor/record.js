@@ -4,9 +4,10 @@ var router = express.Router();
 var moment = require('moment');
 var { ObjectID } = require('mongodb');
 
-var { getSalary } = require('../../helpers/get-salary');
-
 var InstructorRecord = require('../../models/instructor-record');
+var ClassInfo = require('../../models/class');
+
+var {checkInFilter} = require('../auth-filter');
 
 router.get('/', (req, res) => {
   InstructorRecord.find({'disabled': false})
@@ -21,7 +22,7 @@ router.get('/', (req, res) => {
   });
 });
 
-router.post('/', (req, res) => {
+router.post('/', [checkInFilter], (req, res) => {
   var body = req.body;
   var instructor = body.instructorId;
   var course = body.course;
@@ -31,6 +32,8 @@ router.post('/', (req, res) => {
   var recordDate = body.recordDate;
   var addedDate = moment();
   var disabled = false;
+
+  var forcedSave = req.query.forcedSave;
 
   var instructorRecord = new InstructorRecord({
     instructor,
@@ -43,29 +46,26 @@ router.post('/', (req, res) => {
     disabled
   });
 
-  instructorRecord.save((err, savedInstructorRecord) => {
-    if (err) {
-      res.json({success: 0, message: "Unable to save instructor-record: " + err});
-    } else {
-      var salary = 0;
+  if (!forcedSave) {
+    ClassInfo.getMaxSession(course, classNo).then(data => {
+      InstructorRecord.getTotalClassSession(course, classNo).then(total => {
+        
+        if (total < data.maxSession) {
+          InstructorRecord.saveAndGetSalary(instructorRecord, res);
+        } else {
+          res.json({success: 0, message: 'Total class is greater than course max session', verificationRequired: true});
+        }
 
-      getSalary(instructorRecord, salary).then((salary) => {
-        res.json({
-          success: 1,
-          message: "Successfully save instructor-record",
-          results: savedInstructorRecord,
-          salary: salary
-        });
-      }).catch((err) => {
-        res.json({
-          success: 1,
-          message: "Successfully save instructor-record",
-          results: savedInstructorRecord,
-          salary: salary
-        });
+      }).catch(err => {
+        res.json({success: 0, message: 'Get total class error', err});
       });
-    }
-  });
+    }).catch(err => {
+      res.json({success: 0, message: "Get max session error", err});
+    }); 
+  } else {
+    instructorRecord.isOdd = true;
+    InstructorRecord.saveAndGetSalary(instructorRecord, res);
+  }
 });
 
 router.patch('/:recordId', (req, res) => {
@@ -93,7 +93,7 @@ router.patch('/:recordId', (req, res) => {
   });
 });
 
-router.delete('/:recordId', (req, res) => {
+router.delete('/:recordId', [checkInFilter], (req, res) => {
   var recordId = req.params.recordId;
 
   InstructorRecord.findByIdAndUpdate(

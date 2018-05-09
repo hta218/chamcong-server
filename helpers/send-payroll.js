@@ -48,15 +48,16 @@ const setTime = (payroll, payrollTime) => {
   var startDate = moment(payrollTime.startDate).get('date');
   var endDate = mtz.tz(payrollTime.endDate, "Asia/Ho_Chi_Minh").subtract(1, 'days').get('date');
   // set timezone to GMT +7, cause the fucking server located in USA
-  // moment format endDate with time=23h-59'-59" to the next day so subtract 1 day to get the correct day
+  // moment format endDate with time=23h-59'-59" to the next day so subtract 1 to get the correct day
   var month = moment(payrollTime.startDate).get('month') + 1;
-  var year = moment(payrollTime.startDate).get('year')
+  var year = moment(payrollTime.startDate).get('year');
 
   var payrollDuration = `${month}/${year}`;
   var payrollStartDate = `${startDate}/${payrollDuration}`;
   var payrollEndDate = `${endDate}/${payrollDuration}`;
-  var payrollContactTime = mtz.tz("Asia/Ho_Chi_Minh").add(2, 'days').format('DD/MM/YYYY');
-  var payrollPayTime = mtz.tz("Asia/Ho_Chi_Minh").add(6, 'days').format('DD/MM/YYYY');
+
+  var payrollContactTime = mtz.tz("Asia/Ho_Chi_Minh").month(month).date(7).format('DD/MM/YYYY');
+  var payrollPayTime = mtz.tz("Asia/Ho_Chi_Minh").month(month).date(9).format('DD/MM/YYYY');
 
   payroll = payroll.replace('PAYROLL_TIME', payrollDuration);
   payroll = payroll.replace('PAYROLL_START_DATE', payrollStartDate)
@@ -133,14 +134,15 @@ exports.send = (adminInfos, payrollTime, instructor, payroll, callback) => {
     else {
 
       // NOTE: HMTL attachment n HTML mail-body allow ONLY css inline tag !
-      // My solution: render HTML content using bootstrap -> use tool online to convert all css in <style> to inline-css
+      // My solution: render HTML content using bootstrap -> use tool online to convert all internal css to inline-css
 
       setAttachmentContent(payrollTime, instructor, payroll);
 
       // set the HTML mail-body
       htmlContent = setTime(htmlContent, payrollTime);
 
-      sendMail(adminInfos, instructor.email, 'Iliat School - Bảng Lương Giảng Viên', htmlContent, callback);
+      var month = moment(payrollTime.startDate).get('month');
+      sendMail(adminInfos, instructor.email, `Iliat School - Bảng Lương Giảng Viên Tháng ${month}`, htmlContent, callback);
     }
   });
 };
