@@ -56,8 +56,8 @@ const setTime = (payroll, payrollTime) => {
   var payrollStartDate = `${startDate}/${payrollDuration}`;
   var payrollEndDate = `${endDate}/${payrollDuration}`;
 
-  var payrollContactTime = mtz.tz("Asia/Ho_Chi_Minh").month(month).date(7).format('DD/MM/YYYY');
-  var payrollPayTime = mtz.tz("Asia/Ho_Chi_Minh").month(month).date(9).format('DD/MM/YYYY');
+  var payrollContactTime = mtz.tz("Asia/Ho_Chi_Minh").month(month).date(9).format('DD/MM/YYYY');
+  var payrollPayTime = mtz.tz("Asia/Ho_Chi_Minh").month(month).date(10).format('DD/MM/YYYY');
 
   payroll = payroll.replace('PAYROLL_TIME', payrollDuration);
   payroll = payroll.replace('PAYROLL_START_DATE', payrollStartDate)
