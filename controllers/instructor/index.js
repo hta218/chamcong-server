@@ -199,7 +199,7 @@ router.post('/', (req, res) => {
       if (err) {
         res.json({success: 0, message: "Unable to create instructor code", err});
       } else {
-        
+        // set instructor code
         instructor.code = updatedTeam.code + updatedTeam.maxNo;
 
         instructor.save((err, savedInstructor) => {
