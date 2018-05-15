@@ -14,7 +14,7 @@ router.use('/record', require('./record'));
 
 router.use(managerFilter);
 
-// search
+// for searching
 router.get('/', (req, res) => {
   var query = req.query;
   var name = query.name;
@@ -213,27 +213,36 @@ router.post('/', (req, res) => {
   });
 });
 
-router.post('/update/:instructorId', (req, res) => {
+router.patch('/:instructorId', (req, res) => {
   var instructorId = req.params.instructorId;
   var body = req.body;
 
-  Instructor.findByIdAndUpdate(
-    instructorId,
-  {
-    "name" : body.name || instructor.name,
-    "searchName" : getUnicodeText(body.name || instructor.name),
-    "image" : body.image || instructor.image,
-    "code" : body.code || instructor.code,
-    "email" : body.email || instructor.email,
-    "courses" : body.courses || instructor.courses
-  }, {
-    // "new" options is to return the modified/original document [default: false]
-    "new" : true
-  }, (err, instructor) => {
+  Instructor.findOne({'_id': instructorId}, (err, instructor) => {
     if (err) {
-      res.json({success: 0, message: 'Unable to update instructor'});
+      res.json({success: 0, message: 'Instructor not found', err});
     } else {
-      res.json({success: 1, message: 'Update Successfully', instructor: instructor});
+      var updateQuery = {
+        "name" : body.name || instructor.name,
+        "searchName" : getUnicodeText(body.name || instructor.name),
+        "image" : body.image || instructor.image,
+        "code" : body.code || instructor.code,
+        "email" : body.email || instructor.email,
+        "courses" : body.courses || instructor.courses
+      }
+    
+      Instructor.findByIdAndUpdate(
+        instructorId,
+        updateQuery, {
+        // "new" options is to return the modified/original document [default: false]
+        "new" : true
+      }, (err, updatedInstructor) => {
+        if (err) {
+          res.json({success: 0, message: 'Unable to update instructor', err});
+        } else {
+          updatedInstructor.image = '';
+          res.json({success: 1, message: 'Update Successfully', instructor: updatedInstructor});
+        }
+      });
     }
   });
 });
