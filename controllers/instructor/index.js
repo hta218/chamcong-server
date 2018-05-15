@@ -12,7 +12,6 @@ var Team = require('../../models/team');
 
 router.use('/record', require('./record'));
 
-router.use(managerFilter);
 
 // for searching
 router.get('/', (req, res) => {
@@ -116,6 +115,8 @@ router.get('/', (req, res) => {
       }
     });
 });
+
+router.use(managerFilter);
 
 router.get('/all', (req, res) => {
   var name = req.query.name;
