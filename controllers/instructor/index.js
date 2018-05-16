@@ -44,7 +44,8 @@ router.get('/', (req, res) => {
       {
         '$project' : {
             "_id" : 1,
-            "name": 1,
+            "firstName": 1,
+            "lastName": 1,
             "searchName": 1,
             "image": 1,
             "courses": 1,
@@ -80,7 +81,8 @@ router.get('/', (req, res) => {
       {
         '$project' : {
           "_id" : 1,
-          "name" : 1,
+          "firstName" : 1,
+          "lastName" : 1,
           "searchName" : 1,
           "image" : 1,
           "todayRecords" : 1,
@@ -89,7 +91,7 @@ router.get('/', (req, res) => {
       },
       {
         '$group' : {
-          '_id' : {'_id' : '$_id', 'name' : '$name', 'searchName' : '$searchName', 'image' : '$image', 'todayRecords' : '$todayRecords'},
+          '_id' : {'_id' : '$_id', 'firstName' : '$firstName', 'lastName': '$lastName', 'searchName' : '$searchName', 'image' : '$image', 'todayRecords' : '$todayRecords'},
           'courses' : {
             '$push' : '$course'
           }
@@ -98,7 +100,8 @@ router.get('/', (req, res) => {
       {
         '$project' : {
           "_id" : "$_id._id",
-          "name" : "$_id.name",
+          "firstName" : "$_id.firstName",
+          "lastName" : "$_id.lastName",
           "searchName" : "$_id.searchName",
           "image" : "$_id.image",
           "todayRecords" : "$_id.todayRecords",
@@ -145,7 +148,8 @@ router.get('/all', (req, res) => {
     {
       '$group': {
         '_id' : '$_id',
-        "name": { '$first' : '$name' },
+        "firstName": { '$first': '$firstName' },
+        "lastName": { '$first': '$lastName' },
         "searchName": { '$first' : '$searchName' },
         "code": { '$first' : '$code' },
         "email": { '$first' : '$email' },
@@ -156,7 +160,7 @@ router.get('/all', (req, res) => {
       }
     },
     {
-      '$sort': {'name': 1}
+      '$sort': {'firstName': 1}
     }
   ]).limit(20).exec((err, instructors) => {
     if (err) {
