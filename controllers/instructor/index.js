@@ -159,7 +159,7 @@ router.get('/all', (req, res) => {
     {
       '$sort': {'name': 1}
     }
-  ]).exec((err, instructors) => {
+  ]).limit(20).exec((err, instructors) => {
     if (err) {
       res.json({success: 0, message: 'Unable to get instructors'})
     } else {
