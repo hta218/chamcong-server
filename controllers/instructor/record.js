@@ -49,7 +49,6 @@ router.post('/', [checkInFilter], (req, res) => {
   if (!forcedSave) {
     ClassInfo.getMaxSession(course, classNo).then(data => {
       InstructorRecord.getTotalClassSession(course, classNo).then(total => {
-        
         if (total < data.maxSession) {
           InstructorRecord.saveAndGetSalary(instructorRecord, res);
         } else {
