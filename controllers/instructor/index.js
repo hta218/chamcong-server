@@ -12,7 +12,6 @@ var Team = require('../../models/team');
 
 router.use('/record', require('./record'));
 
-
 // for searching
 router.get('/', (req, res) => {
   var query = req.query;
@@ -170,7 +169,8 @@ router.get('/all', (req, res) => {
 
 router.post('/', (req, res) => {
   var body = req.body;
-  var name = body.name;
+  var firstName = body.firstName;
+  var lastName = body.lastName;
   var image = body.image;
   var teamId = body.teamId;
   var email = body.email;
@@ -180,10 +180,11 @@ router.post('/', (req, res) => {
     "endDate" : "2017-09-01T00:00:01.000Z"
   }
 
-  var searchName = getUnicodeText(name);
+  var searchName = getUnicodeText(`${lastName} ${firstName}`);
 
   var instructor = new Instructor({
-    name: name,
+    firstName: firstName,
+    lastName: lastName,
     searchName: searchName,
     image: image,
     email: email,
@@ -223,8 +224,9 @@ router.patch('/:instructorId', (req, res) => {
       res.json({success: 0, message: 'Instructor not found', err});
     } else {
       var updateQuery = {
-        "name" : body.name || instructor.name,
-        "searchName" : getUnicodeText(body.name || instructor.name),
+        "firstName" : body.firstName || instructor.firstName,
+        "lastName": body.lastName || instructor.lastName,
+        "searchName" : getUnicodeText(`${body.firstName || instructor.firstName} ${body.lastName || instructor.lastName}`),
         "image" : body.image || instructor.image,
         "code" : body.code || instructor.code,
         "email" : body.email || instructor.email,
@@ -234,7 +236,7 @@ router.patch('/:instructorId', (req, res) => {
       Instructor.findByIdAndUpdate(
         instructorId,
         updateQuery, {
-        // "new" options is to return the modified/original document [default: false]
+        // "new" options is to re turn the modified/original document [default: false]
         "new" : true
       }, (err, updatedInstructor) => {
         if (err) {
