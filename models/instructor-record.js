@@ -23,9 +23,9 @@ var instructorRecordSchema = new Schema({
   disabled: Boolean
 });
 
-instructorRecordSchema.statics.getTotalClassSession = function(course, classNo) {
+instructorRecordSchema.statics.getTotalClassSession = function(instructor, course, classNo) {
   return new Promise((resolve, reject) => {
-    this.count({course, classNo, role: 'instructor', disabled: false}, (err, total) => {
+    this.count({instructor, course, classNo, disabled: false}, (err, total) => {
       if (err) {
         reject(err);
       } else {

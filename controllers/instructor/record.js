@@ -46,7 +46,7 @@ router.post('/', [checkInFilter], (req, res) => {
   });
 
   ClassInfo.getMaxSession(course, classNo).then(data => {
-    InstructorRecord.getTotalClassSession(course, classNo).then(total => {
+    InstructorRecord.getTotalClassSession(instructor, course, classNo).then(total => {
       if (total < data.maxSession) {
         InstructorRecord.saveAndGetSalary(instructorRecord, res);
       } else {
@@ -55,7 +55,7 @@ router.post('/', [checkInFilter], (req, res) => {
           InstructorRecord.saveAndGetSalary(instructorRecord, res);
         }
         else {
-          res.json({success: 0, message: 'Total class is greater than course max session', verificationRequired: true});
+          res.json({success: 0, message: 'Quá số buổi quy định', verificationRequired: true});
         }
       }
     }).catch(err => {
