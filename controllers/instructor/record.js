@@ -32,9 +32,8 @@ router.post('/', [checkInFilter], (req, res) => {
   var recordDate = body.recordDate;
   var addedDate = moment();
   var disabled = false;
-
-  var forcedSave = req.query.forcedSave;
-
+  var forcedSave = body.forcedSave;
+  
   var instructorRecord = new InstructorRecord({
     instructor,
     course,
@@ -46,25 +45,25 @@ router.post('/', [checkInFilter], (req, res) => {
     disabled
   });
 
-  if (!forcedSave) {
-    ClassInfo.getMaxSession(course, classNo).then(data => {
-      InstructorRecord.getTotalClassSession(course, classNo).then(total => {
-        if (total < data.maxSession) {
+  ClassInfo.getMaxSession(course, classNo).then(data => {
+    InstructorRecord.getTotalClassSession(course, classNo).then(total => {
+      if (total < data.maxSession) {
+        InstructorRecord.saveAndGetSalary(instructorRecord, res);
+      } else {
+        if (forcedSave) {
+          instructorRecord.forcedSave = true;
           InstructorRecord.saveAndGetSalary(instructorRecord, res);
-        } else {
+        }
+        else {
           res.json({success: 0, message: 'Total class is greater than course max session', verificationRequired: true});
         }
-
-      }).catch(err => {
-        res.json({success: 0, message: 'Get total class error', err});
-      });
+      }
     }).catch(err => {
-      res.json({success: 0, message: "Get max session error", err});
-    }); 
-  } else {
-    instructorRecord.isOdd = true;
-    InstructorRecord.saveAndGetSalary(instructorRecord, res);
-  }
+      res.json({success: 0, message: 'Get total class error', err});
+    });
+  }).catch(err => {
+    res.json({success: 0, message: "Get max session error", err});
+  });
 });
 
 router.patch('/:recordId', (req, res) => {

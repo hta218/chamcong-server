@@ -16,7 +16,7 @@ var instructorRecordSchema = new Schema({
   role: String,
   recordDate: Date,
   addedDate: Date,
-  isOdd: {
+  forcedSave: {
     type: Boolean,
     default: false
   },
