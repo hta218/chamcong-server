@@ -19,66 +19,49 @@ router.post('/', (req, res) => {
   
   var {course, classNo, maxSession} = body;
 
-  var newClass = new ClassInfo({course, classNo, maxSession});
-
-  newClass.save((err, savedClassInfo) => {
+  ClassInfo.findOne({
+    course: course,
+    classNo: classNo
+  }, (err, foundClass) => {
     if (err) {
-      res.json({success: 0, message: 'unable to save new class infomation', err});
+      res.json({success: 0, message: 'Class not found', err});
     } else {
-      res.json({success: 1, message: 'Saved class info successfully', savedClassInfo});
+      // update class-maxsession if class already in db
+      if (foundClass) {
+        ClassInfo.findByIdAndUpdate(foundClass._id, {
+          maxSession: maxSession
+        }, {"new": true}, (err, updatedClass) => {
+          if (err) {
+            res.json({success: 0, message: 'Unable to update class-maxsession', err});
+          } else {
+            res.json({success: 1, message: 'Updated class info successfully', updatedClass});
+          }
+        });
+      
+        // create new class
+      } else {
+        var newClass = new ClassInfo({course, classNo, maxSession});
+        
+        newClass.save((err, savedClassInfo) => {
+          if (err) {
+            res.json({success: 0, message: 'Unable to save new class infomation', err});
+          } else {
+            res.json({success: 1, message: 'Saved class info successfully', savedClassInfo});
+          }
+        });
+      }
     }
   });
 });
 
-// router.patch('/:id', (req, res) => {
-//   var body = req.body;
-//   var courseId = req.params.id;
-
-//   var name = body.name;
-//   var description = body.description;
-//   var maxClass = body.maxClass;
-
-//   // NOTE: use findOneAndUpdate() to return the updated document
-//   // ref: https://davidburgos.blog/return-updated-document-mongoose/
-
-//   Course.findOneAndUpdate(
-//     {
-//       "_id": courseId
-//     },
-//     {
-//       "name" : name,
-//       "description" : description,
-//       "maxClass" : maxClass
-//     },
-//     {
-//       new: true
-//     }, (err, courseUpdated) => {
-//       if (err) {
-//        res.json({success: 0, message: "Unale to update course"});
-//       } else {
-//        res.json({success: 1, message: "Updated successfully", courseUpdated});
-//       }
-//     }
-//   );
-// });
-
-// router.delete('/:id', (req, res) => {
-//   const id = req.params.id;
-
-//   Course.findOne({"_id": id}, (err, foundCourse) => {
-//     if (err) {
-//       res.json({success: 0, message: "Unable to find course"});
-//     } else if(!foundCourse) {
-//       res.json({success: 0, message: "Course not found"});
-//     } else {
-//       Course.update({
-//         "_id" : id
-//       }, {
-//         "isActive" : false
-//       }, (err, foundCourse) => {});
-//       res.json({success: 1, message: "Deleted course: ", foundCourse});
-//     }
-//   });
-// });
+router.get('/:courseId', (req, res) => {
+  ClassInfo.find({course: req.params.courseId}, (err, classes) => {
+    if (err) {
+      res.json({success: 0, message: 'Unable to get classes info'});
+    } else {
+      res.json({success: 1, message: 'Fetch classes ok', classes});
+    }
+  })
+});
 
 module.exports = router;
