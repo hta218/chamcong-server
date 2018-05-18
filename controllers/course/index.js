@@ -1,4 +1,5 @@
 var express = require('express');
+var mongoose = require('mongoose');
 var router = express.Router();
 
 var { managerFilter } = require('../auth-filter');
@@ -55,6 +56,30 @@ router.get('/', (req, res) => {
       res.json({success: 1, message: 'Fetch courses successfully', courses: courses});
     }
   });
+});
+
+router.get('/:id', (req, res) => {
+  Course.aggregate([
+    {
+      '$match': {
+        _id: mongoose.Types.ObjectId(req.params.id)
+      }
+    }, 
+    {
+      '$lookup': {
+        'from': 'classinfos',
+        'localField': "_id",
+        'foreignField': 'course',
+        'as': 'classes'
+      }
+    }
+  ]).exec((err, course) => {
+    if (err) {
+      res.json({success: 0, message: "Get course failed", err});
+    } else {
+      res.json({success: 1, message: "Get course ok", course});
+    }
+  })
 });
 
 router.post('/', (req, res) => {
