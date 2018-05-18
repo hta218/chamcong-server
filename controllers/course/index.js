@@ -77,7 +77,7 @@ router.get('/:id', (req, res) => {
     if (err) {
       res.json({success: 0, message: "Get course failed", err});
     } else {
-      res.json({success: 1, message: "Get course ok", course});
+      res.json({success: 1, message: "Get course ok", course: course[0]});
     }
   })
 });
