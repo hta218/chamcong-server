@@ -24,34 +24,45 @@ router.get('/', (req, res) => {
       }
     },
     {
-      '$unwind': {
-        'path': '$classes',
-        'preserveNullAndEmptyArrays': true
-      }
-    },
-    {
-      '$group': {
-        '_id': {
-          '_id': '$_id',
-          'name': '$name',
-          'description': '$description',
-          'isActive': '$isActive',
-        },
-        'maxSession': {'$max': '$classes.maxSession'}
+      '$addFields': {
+        'foundClassNo': {'$max': '$classes.classNo'}
       }
     },
     {
       '$project': {
-        '_id': '$_id._id',
-        "name": '$_id.name',
-        "description": "$_id.description",
-        "isActive": '$_id.isActive',
-        'maxSession': 1
+        '_id': 1,
+        "name": 1,
+        "description": 1,
+        "isActive": 1,
+        "foundClassNo": 1,
+        'foundClass': {
+          '$filter': {
+            'input': '$classes',
+            'as': "class",
+            "cond": {
+              "$eq": ['$foundClassNo', "$$class.classNo"]
+            }
+          }
+        }
+      }
+    },
+    {
+      '$project': {
+        '_id': 1,
+        "name": 1,
+        "description": 1,
+        "isActive": 1,
+        "maxSession": {'$arrayElemAt': ['$foundClass.maxSession', 0]}
+      }
+    },
+    {
+      '$sort': {
+        'name': 1
       }
     }
   ]).exec((err, courses) => {
     if (err) {
-      res.json({success: 0, message: 'Unable to load courses'});
+      res.json({success: 0, message: 'Unable to load courses', err});
     } else {
       res.json({success: 1, message: 'Fetch courses successfully', courses: courses});
     }
