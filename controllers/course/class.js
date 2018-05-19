@@ -34,7 +34,7 @@ router.post('/', (req, res) => {
           if (err) {
             res.json({success: 0, message: 'Unable to update class-maxsession', err});
           } else {
-            res.json({success: 1, message: 'Updated class info successfully', updatedClass});
+            res.json({success: 1, message: 'Updated class info successfully', classInfo: updatedClass});
           }
         });
       
@@ -46,7 +46,7 @@ router.post('/', (req, res) => {
           if (err) {
             res.json({success: 0, message: 'Unable to save new class infomation', err});
           } else {
-            res.json({success: 1, message: 'Saved class info successfully', savedClassInfo});
+            res.json({success: 1, message: 'Saved class info successfully', classInfo: savedClassInfo});
           }
         });
       }
