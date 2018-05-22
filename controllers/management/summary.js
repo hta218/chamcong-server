@@ -35,7 +35,8 @@ router.get('/', (req, res) => {
     {
       '$project' : {
         '_id' : 1,
-        'name' : 1,
+        'firstName' : 1,
+        'lastName' : 1,
         'code' : 1,
         'paidTime' : 1,
         'details' : {
@@ -59,7 +60,8 @@ router.get('/', (req, res) => {
     {
       '$project' : {
         '_id' : 1,
-        'name' : 1,
+        'firstName' : 1,
+        'lastName' : 1,
         'code' : 1,
         'paidTime' : 1,
         'course' : '$details.course',
@@ -77,7 +79,8 @@ router.get('/', (req, res) => {
     {
       '$project' : {
         '_id' : 1,
-        'name' : 1,
+        'firstName' : 1,
+        'lastName' : 1,
         'code' : 1,
         'paidTime' : 1,
         'course' : 1,
@@ -99,7 +102,8 @@ router.get('/', (req, res) => {
     {
       '$project' : {
         '_id' : 1,
-        'name' : 1,
+        'firstName' : 1,
+        'lastName' : 1,
         'code' : 1,
         'paidTime' : 1,
         'course' : 1,
@@ -109,7 +113,7 @@ router.get('/', (req, res) => {
     },
     {
       '$group' : {
-        '_id' : {'_id' : '$_id', 'name' : '$name', 'code' : '$code', 'paidTime' : '$paidTime'},
+        '_id' : {'_id' : '$_id', 'firstName' : '$firstName', 'lastName' : '$lastName', 'code' : '$code', 'paidTime' : '$paidTime'},
         'payroll' : {
           '$push' : {
             "course": "$course",
@@ -124,7 +128,8 @@ router.get('/', (req, res) => {
     {
       '$project' : {
         '_id' : '$_id._id',
-        'name' : '$_id.name',
+        'firstName' : '$_id.firstName',
+        'lastName' : '$_id.lastName',
         'code' : '$_id.code',
         'paidTime' : '$_id.paidTime',
         'payroll' : 1,
@@ -133,12 +138,12 @@ router.get('/', (req, res) => {
       }
     },
     {
-      '$sort': {'name': 1}
+      '$sort': {'firstName': 1}
     }
   ])
   .exec((err, payroll) => {
     if (err) {
-      res.json({success: 0, message: 'Unable to fetch instructor summary'});
+      res.json({success: 0, message: 'Unable to fetch instructor summary', err});
     } else {
       var summaryTime = {
         'startDate' : startDate,
@@ -148,7 +153,7 @@ router.get('/', (req, res) => {
                 message: 'Fetch data Successfully',
                 summaryTime: summaryTime,
                 payroll: payroll
-              })
+              });
     }
   });
 });
