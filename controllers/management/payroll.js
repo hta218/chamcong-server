@@ -43,7 +43,8 @@ router.get('/', (req, res) => {
       '$project' : {
         "instructor" : {
           '_id' : "$_id",
-          'name' : "$name",
+          'firstName' : "$firstName",
+          'lastName' : "$lastName",
           'code' : "$code",
           'email' : "$email",
           'courses' : "$courses",
