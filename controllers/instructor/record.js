@@ -30,7 +30,7 @@ router.post('/', [checkInFilter], (req, res) => {
   var classNo = body.classNo;
   var role = body.role;
   var recordDate = body.recordDate;
-  var addedDate = moment();
+  var addedDate = body.addedDate;
   var disabled = false;
   var forcedSave = body.forcedSave;
   

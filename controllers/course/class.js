@@ -54,14 +54,18 @@ router.post('/', (req, res) => {
   });
 });
 
-router.get('/:courseId', (req, res) => {
-  ClassInfo.find({course: req.params.courseId}, (err, classes) => {
+router.delete('/:id', (req, res) => {
+  const id = req.params.id;
+
+  ClassInfo.findOneAndRemove({"_id": id}, (err, deletedClass) => {
     if (err) {
-      res.json({success: 0, message: 'Unable to get classes info'});
+      res.json({success: 0, message: "Unable to find course", err});
+    } else if (!deletedClass) {
+      res.json({success: 0, message: "Class not found"});
     } else {
-      res.json({success: 1, message: 'Fetch classes ok', classes});
+      res.json({success: 1, message: "Deleted class: ", deletedClass});
     }
-  })
+  });
 });
 
 module.exports = router;
